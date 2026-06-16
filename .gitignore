@@ -1,0 +1,18 @@
+# ----- Java / Maven -----
+target/
+*.class
+
+# ----- IDEs -----
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# ----- Sistema -----
+.DS_Store
+Thumbs.db
+
+# ----- Archivos temporales del convertidor -----
+convertidor-yt/
+*.mp3
+*.mp4

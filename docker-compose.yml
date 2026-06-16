@@ -1,0 +1,33 @@
+# Orquesta backend + frontend para desarrollo local.
+#
+# El backend y el frontend son repositorios SEPARADOS. Este compose asume que el
+# repo del frontend está clonado como carpeta hermana en ../frontend. Ajusta la
+# ruta "context" del servicio frontend si lo clonaste con otro nombre.
+services:
+  backend:
+    build:
+      context: .
+    image: convertidor-yt-backend:local
+    container_name: convertidor-backend
+    ports:
+      - "8080:8080"
+    environment:
+      CONVERTER_WORK_DIR: /tmp/convertidor-yt
+      CONVERTER_CORS_ORIGINS: "*"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ../frontend
+      args:
+        API_BASE_URL: http://localhost:8080
+    image: convertidor-yt-frontend:local
+    container_name: convertidor-frontend
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend

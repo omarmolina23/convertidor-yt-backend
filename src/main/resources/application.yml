@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: convertidor-yt-backend
+  servlet:
+    multipart:
+      max-file-size: 1GB
+      max-request-size: 1GB
+
+server:
+  port: 8080
+  tomcat:
+    max-swallow-size: -1
+
+# Configuración propia del convertidor. Se puede sobreescribir con variables de
+# entorno, p.ej. CONVERTER_YTDLPPATH, CONVERTER_WORKDIR.
+converter:
+  yt-dlp-path: ${CONVERTER_YTDLP_PATH:yt-dlp}
+  ffmpeg-path: ${CONVERTER_FFMPEG_PATH:ffmpeg}
+  work-dir: ${CONVERTER_WORK_DIR:${java.io.tmpdir}/convertidor-yt}
+  retention-minutes: 30
+  process-timeout-seconds: 600
+  cors:
+    allowed-origins: ${CONVERTER_CORS_ORIGINS:*}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
