@@ -53,6 +53,14 @@ Variables de entorno:
 | `CONVERTER_FFMPEG_PATH`   | Ruta al ejecutable ffmpeg         | `ffmpeg`         |
 | `CONVERTER_WORK_DIR`      | Carpeta de archivos temporales    | tmp del sistema  |
 | `CONVERTER_CORS_ORIGINS`  | Orígenes permitidos para CORS     | `*`              |
+| `CONVERTER_USE_ARIA2`     | Usar aria2c (descarga rápida)     | `true`           |
+| `CONVERTER_ARIA2_ARGS`    | Conexiones/segmentos de aria2c    | `-x8 -s8 -k1M`   |
+| `CONVERTER_CONCURRENT_FRAGMENTS` | Fragmentos en paralelo     | `4`              |
+
+> ⚡ **Velocidad:** las descargas usan `aria2c` (multi-conexión) para esquivar el
+> throttling por conexión de YouTube. Si en algún momento aparecen errores `429`
+> por demasiadas conexiones, baja `CONVERTER_ARIA2_ARGS` a `-x4 -s4 -k1M` o
+> desactívalo con `CONVERTER_USE_ARIA2=false`.
 
 ---
 

@@ -31,8 +31,11 @@ public class YtDlpService {
 
     private static final Logger log = LoggerFactory.getLogger(YtDlpService.class);
 
-    /** Captura el porcentaje de las líneas "[download]  42.3% of ...". */
+    /** Captura el porcentaje de las líneas "[download]  42.3% of ..." (descargador nativo). */
     private static final Pattern PROGRESS = Pattern.compile("\\[download]\\s+(\\d{1,3})(?:\\.\\d+)?%");
+
+    /** Captura el porcentaje de las líneas de aria2c, p. ej. "[#7d0a3e 50MiB/119MiB(42%) ...]". */
+    private static final Pattern ARIA2_PROGRESS = Pattern.compile("\\((\\d{1,3})(?:\\.\\d+)?%\\)");
 
     private final ConverterProperties properties;
 
@@ -72,16 +75,36 @@ public class YtDlpService {
 
     /** Camino rápido: yt-dlp descarga solo la sección pedida con ffmpeg. */
     private Path runSectionDownload(ConversionJob job, ConversionRequest request, Path jobDir) {
-        List<String> cmd = buildYtDlpCommand(request, jobDir, true);
+        List<String> cmd = buildYtDlpCommand(request, jobDir, true, false);
         log.info("Ejecutando (sección): {}", String.join(" ", cmd));
-        runProcess(cmd, job, "yt-dlp");
-        return locateOutputFile(jobDir);
+        return execAndLocate(cmd, job, jobDir);
     }
 
-    /** Descarga del medio completo (sin recorte). */
+    /**
+     * Descarga del medio completo (sin recorte). Si aria2c está habilitado, lo
+     * intenta primero (descarga multi-conexión, más rápida); si falla —algunas
+     * URLs de YouTube rechazan a los descargadores externos— reintenta con el
+     * descargador nativo de yt-dlp, que siempre funciona.
+     */
     private Path runFullDownload(ConversionJob job, ConversionRequest request, Path jobDir) {
-        List<String> cmd = buildYtDlpCommand(request, jobDir, false);
-        log.info("Ejecutando (completo): {}", String.join(" ", cmd));
+        if (properties.isUseAria2()) {
+            try {
+                List<String> cmd = buildYtDlpCommand(request, jobDir, false, true);
+                log.info("Ejecutando (completo, aria2): {}", String.join(" ", cmd));
+                return execAndLocate(cmd, job, jobDir);
+            } catch (ConversionException e) {
+                log.warn("Descarga con aria2 falló ({}). Reintentando con el descargador nativo.",
+                        e.getMessage());
+                resetDir(jobDir);
+                job.setProgress(0);
+            }
+        }
+        List<String> cmd = buildYtDlpCommand(request, jobDir, false, false);
+        log.info("Ejecutando (completo, nativo): {}", String.join(" ", cmd));
+        return execAndLocate(cmd, job, jobDir);
+    }
+
+    private Path execAndLocate(List<String> cmd, ConversionJob job, Path jobDir) {
         runProcess(cmd, job, "yt-dlp");
         return locateOutputFile(jobDir);
     }
@@ -102,8 +125,10 @@ public class YtDlpService {
      *
      * @param withSection si {@code true} y la petición tiene intervalo, añade el
      *                    recorte parcial con {@code --download-sections}.
+     * @param useAria2    si {@code true}, usa aria2c como descargador externo.
      */
-    private List<String> buildYtDlpCommand(ConversionRequest request, Path jobDir, boolean withSection) {
+    private List<String> buildYtDlpCommand(ConversionRequest request, Path jobDir,
+                                           boolean withSection, boolean useAria2) {
         List<String> cmd = new ArrayList<>();
         cmd.add(properties.getYtDlpPath());
         cmd.add("--no-playlist");
@@ -114,6 +139,19 @@ public class YtDlpService {
         cmd.add("3");
         cmd.add("--fragment-retries");
         cmd.add("3");
+
+        // Aceleración: descargar fragmentos en paralelo (DASH/HLS).
+        cmd.add("--concurrent-fragments");
+        cmd.add(String.valueOf(properties.getConcurrentFragments()));
+
+        // aria2c (multi-conexión) acelera mucho los archivos de una sola pieza.
+        // No aplica al recorte por sección, que yt-dlp resuelve con ffmpeg.
+        if (useAria2) {
+            cmd.add("--downloader");
+            cmd.add(properties.getAria2Path());
+            cmd.add("--downloader-args");
+            cmd.add("aria2c:" + properties.getAria2Args());
+        }
 
         // Solo indicamos --ffmpeg-location cuando se configura una RUTA real.
         // Si es el valor por defecto "ffmpeg", dejamos que yt-dlp lo encuentre en
@@ -231,6 +269,11 @@ public class YtDlpService {
         Matcher m = PROGRESS.matcher(line);
         if (m.find()) {
             job.setProgress(Integer.parseInt(m.group(1)));
+            return;
+        }
+        Matcher a = ARIA2_PROGRESS.matcher(line);
+        if (a.find()) {
+            job.setProgress(Integer.parseInt(a.group(1)));
         }
     }
 
