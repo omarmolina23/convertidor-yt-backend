@@ -19,6 +19,11 @@ converter:
   work-dir: ${CONVERTER_WORK_DIR:${java.io.tmpdir}/convertidor-yt}
   retention-minutes: 30
   process-timeout-seconds: 600
+  # Aceleración de descargas
+  use-aria2: ${CONVERTER_USE_ARIA2:true}
+  aria2-path: ${CONVERTER_ARIA2_PATH:aria2c}
+  aria2-args: ${CONVERTER_ARIA2_ARGS:-x8 -s8 -k1M}
+  concurrent-fragments: ${CONVERTER_CONCURRENT_FRAGMENTS:4}
   cors:
     allowed-origins: ${CONVERTER_CORS_ORIGINS:*}
 

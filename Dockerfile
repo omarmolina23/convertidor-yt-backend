@@ -13,10 +13,11 @@ RUN mvn -B clean package -DskipTests
 FROM eclipse-temurin:21-jre AS runtime
 WORKDIR /app
 
-# ffmpeg (conversión) + yt-dlp (descarga) + deno (runtime JS que yt-dlp usa para
-# extraer formatos de YouTube). yt-dlp y deno se instalan como binarios standalone.
+# ffmpeg (conversión) + aria2 (descargas multi-conexión, más rápidas) + yt-dlp
+# (descarga) + deno (runtime JS que yt-dlp usa para extraer formatos de YouTube).
+# yt-dlp y deno se instalan como binarios standalone.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ffmpeg ca-certificates curl unzip \
+    && apt-get install -y --no-install-recommends ffmpeg aria2 ca-certificates curl unzip \
     && curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux -o /usr/local/bin/yt-dlp \
     && chmod a+rx /usr/local/bin/yt-dlp \
     && curl -L https://github.com/denoland/deno/releases/latest/download/deno-x86_64-unknown-linux-gnu.zip -o /tmp/deno.zip \
