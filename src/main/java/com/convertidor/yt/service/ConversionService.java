@@ -24,13 +24,16 @@ public class ConversionService {
 
     private final YtDlpService ytDlpService;
     private final JobStore jobStore;
+    private final StorageService storageService;
     private final TaskExecutor executor;
 
     public ConversionService(YtDlpService ytDlpService,
                              JobStore jobStore,
+                             StorageService storageService,
                              @Qualifier("conversionExecutor") TaskExecutor executor) {
         this.ytDlpService = ytDlpService;
         this.jobStore = jobStore;
+        this.storageService = storageService;
         this.executor = executor;
     }
 
@@ -55,8 +58,8 @@ public class ConversionService {
             job.setStatus(JobStatus.PROCESSING);
             jobStore.save(job);
             Path output = ytDlpService.download(job, request);
-            job.setOutputFile(output);
             job.setFileName(output.getFileName().toString());
+            job.setStorageKey(storageService.store(job, output));
             job.setProgress(100);
             job.setStatus(JobStatus.READY);
             jobStore.save(job);

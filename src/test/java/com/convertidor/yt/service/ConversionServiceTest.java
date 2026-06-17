@@ -35,13 +35,15 @@ class ConversionServiceTest {
 
     private YtDlpService ytDlpService;
     private JobStore jobStore;
+    private StorageService storageService;
     private ConversionService service;
 
     @BeforeEach
     void setUp() {
         ytDlpService = mock(YtDlpService.class);
         jobStore = mock(JobStore.class);
-        service = new ConversionService(ytDlpService, jobStore, Runnable::run);
+        storageService = mock(StorageService.class);
+        service = new ConversionService(ytDlpService, jobStore, storageService, Runnable::run);
     }
 
     @Test
@@ -50,6 +52,7 @@ class ConversionServiceTest {
         var request = new ConversionRequest(
                 "https://www.youtube.com/watch?v=dQw4w9WgXcQ", Format.MP3, "192", null, null);
         when(ytDlpService.download(any(), any())).thenReturn(Path.of("cancion.mp3"));
+        when(storageService.store(any(), any())).thenReturn("stored-key");
 
         ConversionJob job = service.submit(request);
 
@@ -58,7 +61,7 @@ class ConversionServiceTest {
         assertThat(job.getStatus()).isEqualTo(JobStatus.READY);
         assertThat(job.getProgress()).isEqualTo(100);
         assertThat(job.getFileName()).isEqualTo("cancion.mp3");
-        assertThat(job.getOutputFile()).isEqualTo(Path.of("cancion.mp3"));
+        assertThat(job.getStorageKey()).isEqualTo("stored-key");
         assertThat(job.getFormat()).isEqualTo(Format.MP3);
     }
 

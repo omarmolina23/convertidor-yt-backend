@@ -38,6 +38,14 @@ converter:
   pool-max-size: ${CONVERTER_POOL_MAX_SIZE:4}
   queue-capacity: ${CONVERTER_QUEUE_CAPACITY:50}
   max-duration-seconds: ${CONVERTER_MAX_DURATION_SECONDS:0}
+  # Almacenamiento del archivo: "local" (disco) o "r2" (Cloudflare R2 / S3).
+  storage-type: ${CONVERTER_STORAGE_TYPE:local}
+  s3-endpoint: ${R2_ENDPOINT:}
+  s3-bucket: ${R2_BUCKET:}
+  s3-access-key: ${R2_ACCESS_KEY:}
+  s3-secret-key: ${R2_SECRET_KEY:}
+  s3-region: ${R2_REGION:auto}
+  s3-presign-minutes: ${R2_PRESIGN_MINUTES:10}
   cors:
     allowed-origins: ${CONVERTER_CORS_ORIGINS:*}
 

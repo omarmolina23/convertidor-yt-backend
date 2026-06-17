@@ -5,6 +5,7 @@ import com.convertidor.yt.model.ConversionJob;
 import com.convertidor.yt.model.Format;
 import com.convertidor.yt.model.JobStatus;
 import com.convertidor.yt.service.ConversionService;
+import com.convertidor.yt.service.StorageService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -27,6 +28,9 @@ class ConversionControllerTest {
 
     @MockBean
     private ConversionService conversionService;
+
+    @MockBean
+    private StorageService storageService;
 
     @Test
     void creaTrabajoConPeticionValida() throws Exception {

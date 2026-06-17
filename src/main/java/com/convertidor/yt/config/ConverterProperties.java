@@ -53,6 +53,27 @@ public class ConverterProperties {
     /** Duración máxima del video en segundos (0 = sin límite). */
     private long maxDurationSeconds = 0;
 
+    /** Estrategia de almacenamiento del archivo convertido: "local" o "r2". */
+    private String storageType = "local";
+
+    /** Endpoint S3-compatible (R2: https://&lt;cuenta&gt;.r2.cloudflarestorage.com). */
+    private String s3Endpoint = "";
+
+    /** Bucket de object storage. */
+    private String s3Bucket = "";
+
+    /** Access Key ID (token de R2). */
+    private String s3AccessKey = "";
+
+    /** Secret Access Key (token de R2). */
+    private String s3SecretKey = "";
+
+    /** Región de firma ("auto" en R2). */
+    private String s3Region = "auto";
+
+    /** Minutos de validez de las URLs prefirmadas de descarga. */
+    private long s3PresignMinutes = 10;
+
     public String getYtDlpPath() {
         return ytDlpPath;
     }
@@ -171,5 +192,61 @@ public class ConverterProperties {
 
     public void setMaxDurationSeconds(long maxDurationSeconds) {
         this.maxDurationSeconds = maxDurationSeconds;
+    }
+
+    public String getStorageType() {
+        return storageType;
+    }
+
+    public void setStorageType(String storageType) {
+        this.storageType = storageType;
+    }
+
+    public String getS3Endpoint() {
+        return s3Endpoint;
+    }
+
+    public void setS3Endpoint(String s3Endpoint) {
+        this.s3Endpoint = s3Endpoint;
+    }
+
+    public String getS3Bucket() {
+        return s3Bucket;
+    }
+
+    public void setS3Bucket(String s3Bucket) {
+        this.s3Bucket = s3Bucket;
+    }
+
+    public String getS3AccessKey() {
+        return s3AccessKey;
+    }
+
+    public void setS3AccessKey(String s3AccessKey) {
+        this.s3AccessKey = s3AccessKey;
+    }
+
+    public String getS3SecretKey() {
+        return s3SecretKey;
+    }
+
+    public void setS3SecretKey(String s3SecretKey) {
+        this.s3SecretKey = s3SecretKey;
+    }
+
+    public String getS3Region() {
+        return s3Region;
+    }
+
+    public void setS3Region(String s3Region) {
+        this.s3Region = s3Region;
+    }
+
+    public long getS3PresignMinutes() {
+        return s3PresignMinutes;
+    }
+
+    public void setS3PresignMinutes(long s3PresignMinutes) {
+        this.s3PresignMinutes = s3PresignMinutes;
     }
 }

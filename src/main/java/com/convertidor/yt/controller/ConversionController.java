@@ -7,18 +7,13 @@ import com.convertidor.yt.exception.ConversionException;
 import com.convertidor.yt.model.ConversionJob;
 import com.convertidor.yt.model.JobStatus;
 import com.convertidor.yt.service.ConversionService;
+import com.convertidor.yt.service.StorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.nio.file.Path;
 
 /**
  * Endpoints REST del convertidor.
@@ -29,9 +24,11 @@ import java.nio.file.Path;
 public class ConversionController {
 
     private final ConversionService conversionService;
+    private final StorageService storageService;
 
-    public ConversionController(ConversionService conversionService) {
+    public ConversionController(ConversionService conversionService, StorageService storageService) {
         this.conversionService = conversionService;
+        this.storageService = storageService;
     }
 
     @Operation(summary = "Crea un trabajo de conversión (asíncrono)")
@@ -53,23 +50,13 @@ public class ConversionController {
 
     @Operation(summary = "Descarga el archivo convertido cuando está listo")
     @GetMapping("/{id}/download")
-    public ResponseEntity<Resource> download(@PathVariable String id) {
+    public ResponseEntity<?> download(@PathVariable String id) {
         ConversionJob job = conversionService.getJob(id);
-        if (job.getStatus() != JobStatus.READY || job.getOutputFile() == null) {
-            throw new ConversionException("El archivo aún no está listo (estado: " + job.getStatus() + ")");
+        if (job.getStatus() != JobStatus.READY || job.getStorageKey() == null) {
+            throw new ConversionException(
+                    "El archivo aún no está listo (estado: " + job.getStatus() + ")");
         }
-
-        Path file = job.getOutputFile();
-        Resource resource = new FileSystemResource(file);
-        MediaType mediaType = switch (job.getFormat()) {
-            case MP3 -> MediaType.parseMediaType("audio/mpeg");
-            case MP4 -> MediaType.parseMediaType("video/mp4");
-        };
-
-        return ResponseEntity.ok()
-                .contentType(mediaType)
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + job.getFileName() + "\"")
-                .body(resource);
+        // Modo local: stream del archivo. Modo r2: redirect a una URL prefirmada.
+        return storageService.download(job);
     }
 }
