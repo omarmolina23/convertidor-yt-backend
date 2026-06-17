@@ -7,7 +7,8 @@ spring:
       max-request-size: 1GB
 
 server:
-  port: 8080
+  # Railway (y otros PaaS) inyectan el puerto en la variable PORT.
+  port: ${PORT:8080}
   tomcat:
     max-swallow-size: -1
 
@@ -17,8 +18,9 @@ converter:
   yt-dlp-path: ${CONVERTER_YTDLP_PATH:yt-dlp}
   ffmpeg-path: ${CONVERTER_FFMPEG_PATH:ffmpeg}
   work-dir: ${CONVERTER_WORK_DIR:${java.io.tmpdir}/convertidor-yt}
-  retention-minutes: 30
-  process-timeout-seconds: 600
+  # Perillas de contención de recursos (ajustables por entorno en producción).
+  retention-minutes: ${CONVERTER_RETENTION_MINUTES:30}
+  process-timeout-seconds: ${CONVERTER_PROCESS_TIMEOUT_SECONDS:600}
   # Aceleración de descargas
   use-aria2: ${CONVERTER_USE_ARIA2:true}
   aria2-path: ${CONVERTER_ARIA2_PATH:aria2c}
