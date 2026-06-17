@@ -38,9 +38,11 @@ public class YtDlpService {
     private static final Pattern ARIA2_PROGRESS = Pattern.compile("\\((\\d{1,3})(?:\\.\\d+)?%\\)");
 
     private final ConverterProperties properties;
+    private final JobStore jobStore;
 
-    public YtDlpService(ConverterProperties properties) {
+    public YtDlpService(ConverterProperties properties, JobStore jobStore) {
         this.properties = properties;
+        this.jobStore = jobStore;
     }
 
     /**
@@ -285,14 +287,20 @@ public class YtDlpService {
     }
 
     private void updateProgress(ConversionJob job, String line) {
+        int previous = job.getProgress();
         Matcher m = PROGRESS.matcher(line);
         if (m.find()) {
             job.setProgress(Integer.parseInt(m.group(1)));
-            return;
+        } else {
+            Matcher a = ARIA2_PROGRESS.matcher(line);
+            if (a.find()) {
+                job.setProgress(Integer.parseInt(a.group(1)));
+            }
         }
-        Matcher a = ARIA2_PROGRESS.matcher(line);
-        if (a.find()) {
-            job.setProgress(Integer.parseInt(a.group(1)));
+        // Persiste el avance solo cuando el porcentaje cambia, para que el
+        // polling lo vea sin saturar Redis con cada línea de yt-dlp.
+        if (job.getProgress() != previous) {
+            jobStore.save(job);
         }
     }
 

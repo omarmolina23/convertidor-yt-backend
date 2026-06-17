@@ -1,6 +1,10 @@
 spring:
   application:
     name: convertidor-yt-backend
+  data:
+    redis:
+      # Railway expone REDIS_URL al añadir el plugin de Redis.
+      url: ${REDIS_URL:redis://localhost:6379}
   servlet:
     multipart:
       max-file-size: 1GB

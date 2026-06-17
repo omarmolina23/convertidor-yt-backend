@@ -53,15 +53,18 @@ public class ConversionService {
     void process(ConversionJob job, ConversionRequest request) {
         try {
             job.setStatus(JobStatus.PROCESSING);
+            jobStore.save(job);
             Path output = ytDlpService.download(job, request);
             job.setOutputFile(output);
             job.setFileName(output.getFileName().toString());
             job.setProgress(100);
             job.setStatus(JobStatus.READY);
+            jobStore.save(job);
             log.info("Trabajo {} listo: {}", job.getId(), job.getFileName());
         } catch (Exception e) {
             job.setStatus(JobStatus.FAILED);
             job.setErrorMessage(e.getMessage());
+            jobStore.save(job);
             log.error("Trabajo {} falló: {}", job.getId(), e.getMessage());
         }
     }

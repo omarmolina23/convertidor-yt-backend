@@ -42,6 +42,12 @@
             <version>2.7.0</version>
         </dependency>
 
+        <!-- Estado de los trabajos compartido entre réplicas -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

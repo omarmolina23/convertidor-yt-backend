@@ -17,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -52,7 +53,7 @@ class ConversionServiceTest {
 
         ConversionJob job = service.submit(request);
 
-        verify(jobStore).save(job);
+        verify(jobStore, atLeastOnce()).save(job);
         verify(ytDlpService).download(eq(job), eq(request));
         assertThat(job.getStatus()).isEqualTo(JobStatus.READY);
         assertThat(job.getProgress()).isEqualTo(100);
