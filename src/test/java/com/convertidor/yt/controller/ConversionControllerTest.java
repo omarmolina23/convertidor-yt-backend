@@ -1,5 +1,6 @@
 package com.convertidor.yt.controller;
 
+import com.convertidor.yt.exception.JobNotFoundException;
 import com.convertidor.yt.model.ConversionJob;
 import com.convertidor.yt.model.Format;
 import com.convertidor.yt.model.JobStatus;
@@ -67,5 +68,25 @@ class ConversionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("PROCESSING"))
                 .andExpect(jsonPath("$.progress").value(42));
+    }
+
+    @Test
+    void devuelve404SiElTrabajoNoExiste() throws Exception {
+        when(conversionService.getJob("missing"))
+                .thenThrow(new JobNotFoundException("missing"));
+
+        mockMvc.perform(get("/api/v1/conversions/missing"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404));
+    }
+
+    @Test
+    void descargaDevuelve422SiElArchivoNoEstaListo() throws Exception {
+        ConversionJob job = new ConversionJob("abc-123", Format.MP3);
+        job.setStatus(JobStatus.PROCESSING);
+        when(conversionService.getJob("abc-123")).thenReturn(job);
+
+        mockMvc.perform(get("/api/v1/conversions/abc-123/download"))
+                .andExpect(status().isUnprocessableEntity());
     }
 }
