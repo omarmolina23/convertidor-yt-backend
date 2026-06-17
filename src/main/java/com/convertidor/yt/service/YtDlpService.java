@@ -152,6 +152,13 @@ public class YtDlpService {
             cmd.add(proxy);
         }
 
+        // Tope de duración: yt-dlp descarta el video si excede el máximo (0 = sin límite).
+        long maxDuration = properties.getMaxDurationSeconds();
+        if (maxDuration > 0) {
+            cmd.add("--match-filter");
+            cmd.add("duration <= " + maxDuration);
+        }
+
         // Aceleración: descargar fragmentos en paralelo (DASH/HLS).
         cmd.add("--concurrent-fragments");
         cmd.add(String.valueOf(properties.getConcurrentFragments()));

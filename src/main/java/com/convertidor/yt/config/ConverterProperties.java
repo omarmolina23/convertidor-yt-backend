@@ -41,6 +41,18 @@ public class ConverterProperties {
     /** Proxy para las descargas de yt-dlp (http://… o socks5://…). Vacío = sin proxy. */
     private String proxy = "";
 
+    /** Hilos núcleo del pool de conversión. */
+    private int poolCoreSize = 2;
+
+    /** Hilos máximos del pool de conversión. */
+    private int poolMaxSize = 4;
+
+    /** Capacidad de la cola de trabajos en espera. */
+    private int queueCapacity = 50;
+
+    /** Duración máxima del video en segundos (0 = sin límite). */
+    private long maxDurationSeconds = 0;
+
     public String getYtDlpPath() {
         return ytDlpPath;
     }
@@ -127,5 +139,37 @@ public class ConverterProperties {
 
     public void setProxy(String proxy) {
         this.proxy = proxy;
+    }
+
+    public int getPoolCoreSize() {
+        return poolCoreSize;
+    }
+
+    public void setPoolCoreSize(int poolCoreSize) {
+        this.poolCoreSize = poolCoreSize;
+    }
+
+    public int getPoolMaxSize() {
+        return poolMaxSize;
+    }
+
+    public void setPoolMaxSize(int poolMaxSize) {
+        this.poolMaxSize = poolMaxSize;
+    }
+
+    public int getQueueCapacity() {
+        return queueCapacity;
+    }
+
+    public void setQueueCapacity(int queueCapacity) {
+        this.queueCapacity = queueCapacity;
+    }
+
+    public long getMaxDurationSeconds() {
+        return maxDurationSeconds;
+    }
+
+    public void setMaxDurationSeconds(long maxDurationSeconds) {
+        this.maxDurationSeconds = maxDurationSeconds;
     }
 }

@@ -29,6 +29,11 @@ converter:
   # Anti-bloqueo de YouTube: cookies de sesión y/o proxy residencial.
   cookies-file: ${CONVERTER_COOKIES_FILE:}
   proxy: ${CONVERTER_PROXY:}
+  # Límites de recursos: pool de conversión y duración máxima del video.
+  pool-core-size: ${CONVERTER_POOL_CORE_SIZE:2}
+  pool-max-size: ${CONVERTER_POOL_MAX_SIZE:4}
+  queue-capacity: ${CONVERTER_QUEUE_CAPACITY:50}
+  max-duration-seconds: ${CONVERTER_MAX_DURATION_SECONDS:0}
   cors:
     allowed-origins: ${CONVERTER_CORS_ORIGINS:*}
 
