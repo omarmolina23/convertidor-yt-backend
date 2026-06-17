@@ -140,6 +140,18 @@ public class YtDlpService {
         cmd.add("--fragment-retries");
         cmd.add("3");
 
+        // Anti-bloqueo de YouTube: cookies de una sesión autenticada y/o proxy.
+        String cookies = properties.getCookiesFile();
+        if (cookies != null && !cookies.isBlank()) {
+            cmd.add("--cookies");
+            cmd.add(cookies);
+        }
+        String proxy = properties.getProxy();
+        if (proxy != null && !proxy.isBlank()) {
+            cmd.add("--proxy");
+            cmd.add(proxy);
+        }
+
         // Aceleración: descargar fragmentos en paralelo (DASH/HLS).
         cmd.add("--concurrent-fragments");
         cmd.add(String.valueOf(properties.getConcurrentFragments()));

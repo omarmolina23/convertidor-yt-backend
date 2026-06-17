@@ -35,6 +35,12 @@ public class ConverterProperties {
     /** Fragmentos a descargar en paralelo cuando el formato es fragmentado (DASH/HLS). */
     private int concurrentFragments = 4;
 
+    /** Archivo de cookies (formato Netscape) para autenticar yt-dlp ante YouTube. Vacío = sin cookies. */
+    private String cookiesFile = "";
+
+    /** Proxy para las descargas de yt-dlp (http://… o socks5://…). Vacío = sin proxy. */
+    private String proxy = "";
+
     public String getYtDlpPath() {
         return ytDlpPath;
     }
@@ -105,5 +111,21 @@ public class ConverterProperties {
 
     public void setConcurrentFragments(int concurrentFragments) {
         this.concurrentFragments = concurrentFragments;
+    }
+
+    public String getCookiesFile() {
+        return cookiesFile;
+    }
+
+    public void setCookiesFile(String cookiesFile) {
+        this.cookiesFile = cookiesFile;
+    }
+
+    public String getProxy() {
+        return proxy;
+    }
+
+    public void setProxy(String proxy) {
+        this.proxy = proxy;
     }
 }

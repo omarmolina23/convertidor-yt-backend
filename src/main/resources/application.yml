@@ -26,6 +26,9 @@ converter:
   aria2-path: ${CONVERTER_ARIA2_PATH:aria2c}
   aria2-args: ${CONVERTER_ARIA2_ARGS:-x8 -s8 -k1M}
   concurrent-fragments: ${CONVERTER_CONCURRENT_FRAGMENTS:4}
+  # Anti-bloqueo de YouTube: cookies de sesión y/o proxy residencial.
+  cookies-file: ${CONVERTER_COOKIES_FILE:}
+  proxy: ${CONVERTER_PROXY:}
   cors:
     allowed-origins: ${CONVERTER_CORS_ORIGINS:*}
 
