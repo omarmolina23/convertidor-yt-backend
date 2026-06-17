@@ -6,8 +6,6 @@ import com.convertidor.yt.model.JobStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Path;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -24,7 +22,7 @@ class JobStatusResponseTest {
         job.setStatus(JobStatus.READY);
         job.setProgress(100);
         job.setFileName("cancion.mp3");
-        job.setOutputFile(Path.of("/tmp/cancion.mp3"));
+        job.setStorageKey("abc-123/cancion.mp3");
 
         var res = JobStatusResponse.from(job);
 

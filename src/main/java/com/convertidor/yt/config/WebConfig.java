@@ -16,8 +16,10 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        // allowedOriginPatterns (en vez de allowedOrigins) acepta comodines, p.ej.
+        // "https://*.vercel.app" para cubrir las preview deployments de Vercel.
         registry.addMapping("/api/**")
-                .allowedOrigins(allowedOrigins)
+                .allowedOriginPatterns(allowedOrigins)
                 .allowedMethods("GET", "POST", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .maxAge(3600);

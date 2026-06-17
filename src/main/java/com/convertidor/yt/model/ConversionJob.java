@@ -1,6 +1,5 @@
 package com.convertidor.yt.model;
 
-import java.nio.file.Path;
 import java.time.Instant;
 
 /**
@@ -16,7 +15,7 @@ public class ConversionJob {
     private volatile JobStatus status = JobStatus.PENDING;
     private volatile int progress = 0;            // 0-100
     private volatile String errorMessage;
-    private volatile Path outputFile;             // ruta del archivo final
+    private volatile String storageKey;           // ruta local o key del objeto en R2
     private volatile String fileName;             // nombre amigable para descarga
 
     public ConversionJob(String id, Format format) {
@@ -61,12 +60,12 @@ public class ConversionJob {
         this.errorMessage = errorMessage;
     }
 
-    public Path getOutputFile() {
-        return outputFile;
+    public String getStorageKey() {
+        return storageKey;
     }
 
-    public void setOutputFile(Path outputFile) {
-        this.outputFile = outputFile;
+    public void setStorageKey(String storageKey) {
+        this.storageKey = storageKey;
     }
 
     public String getFileName() {

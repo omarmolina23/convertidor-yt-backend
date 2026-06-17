@@ -15,11 +15,11 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class AppConfig {
 
     @Bean(name = "conversionExecutor")
-    public TaskExecutor conversionExecutor() {
+    public TaskExecutor conversionExecutor(ConverterProperties properties) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(4);
-        executor.setQueueCapacity(50);
+        executor.setCorePoolSize(properties.getPoolCoreSize());
+        executor.setMaxPoolSize(properties.getPoolMaxSize());
+        executor.setQueueCapacity(properties.getQueueCapacity());
         executor.setThreadNamePrefix("conv-");
         executor.initialize();
         return executor;

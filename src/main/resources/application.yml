@@ -1,13 +1,18 @@
 spring:
   application:
     name: convertidor-yt-backend
+  data:
+    redis:
+      # Railway expone REDIS_URL al añadir el plugin de Redis.
+      url: ${REDIS_URL:redis://localhost:6379}
   servlet:
     multipart:
       max-file-size: 1GB
       max-request-size: 1GB
 
 server:
-  port: 8080
+  # Railway (y otros PaaS) inyectan el puerto en la variable PORT.
+  port: ${PORT:8080}
   tomcat:
     max-swallow-size: -1
 
@@ -17,13 +22,30 @@ converter:
   yt-dlp-path: ${CONVERTER_YTDLP_PATH:yt-dlp}
   ffmpeg-path: ${CONVERTER_FFMPEG_PATH:ffmpeg}
   work-dir: ${CONVERTER_WORK_DIR:${java.io.tmpdir}/convertidor-yt}
-  retention-minutes: 30
-  process-timeout-seconds: 600
+  # Perillas de contención de recursos (ajustables por entorno en producción).
+  retention-minutes: ${CONVERTER_RETENTION_MINUTES:30}
+  process-timeout-seconds: ${CONVERTER_PROCESS_TIMEOUT_SECONDS:600}
   # Aceleración de descargas
   use-aria2: ${CONVERTER_USE_ARIA2:true}
   aria2-path: ${CONVERTER_ARIA2_PATH:aria2c}
   aria2-args: ${CONVERTER_ARIA2_ARGS:-x8 -s8 -k1M}
   concurrent-fragments: ${CONVERTER_CONCURRENT_FRAGMENTS:4}
+  # Anti-bloqueo de YouTube: cookies de sesión y/o proxy residencial.
+  cookies-file: ${CONVERTER_COOKIES_FILE:}
+  proxy: ${CONVERTER_PROXY:}
+  # Límites de recursos: pool de conversión y duración máxima del video.
+  pool-core-size: ${CONVERTER_POOL_CORE_SIZE:2}
+  pool-max-size: ${CONVERTER_POOL_MAX_SIZE:4}
+  queue-capacity: ${CONVERTER_QUEUE_CAPACITY:50}
+  max-duration-seconds: ${CONVERTER_MAX_DURATION_SECONDS:0}
+  # Almacenamiento del archivo: "local" (disco) o "r2" (Cloudflare R2 / S3).
+  storage-type: ${CONVERTER_STORAGE_TYPE:local}
+  s3-endpoint: ${R2_ENDPOINT:}
+  s3-bucket: ${R2_BUCKET:}
+  s3-access-key: ${R2_ACCESS_KEY:}
+  s3-secret-key: ${R2_SECRET_KEY:}
+  s3-region: ${R2_REGION:auto}
+  s3-presign-minutes: ${R2_PRESIGN_MINUTES:10}
   cors:
     allowed-origins: ${CONVERTER_CORS_ORIGINS:*}
 

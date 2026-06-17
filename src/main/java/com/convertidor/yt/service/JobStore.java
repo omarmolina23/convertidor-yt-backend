@@ -2,86 +2,77 @@ package com.convertidor.yt.service;
 
 import com.convertidor.yt.config.ConverterProperties;
 import com.convertidor.yt.model.ConversionJob;
+import com.convertidor.yt.model.Format;
 import com.convertidor.yt.model.JobStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Duration;
-import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 /**
- * Almacén en memoria de los trabajos de conversión. Limpia periódicamente los
- * trabajos antiguos y sus archivos para no llenar el disco.
+ * Almacén de metadatos de los trabajos, respaldado por Redis y compartido entre
+ * réplicas. Cada trabajo es un hash {@code job:{id}} con TTL = retención, así que
+ * expira solo (la limpieza de los archivos la hace {@link StorageService}).
  */
 @Component
 public class JobStore {
 
-    private static final Logger log = LoggerFactory.getLogger(JobStore.class);
+    private static final String KEY_PREFIX = "job:";
 
-    private final Map<String, ConversionJob> jobs = new ConcurrentHashMap<>();
+    private final StringRedisTemplate redis;
     private final ConverterProperties properties;
 
-    public JobStore(ConverterProperties properties) {
+    public JobStore(StringRedisTemplate redis, ConverterProperties properties) {
+        this.redis = redis;
         this.properties = properties;
     }
 
+    /** Guarda (o actualiza) el trabajo y refresca su TTL. */
     public void save(ConversionJob job) {
-        jobs.put(job.getId(), job);
+        String key = KEY_PREFIX + job.getId();
+        Map<String, String> hash = new HashMap<>();
+        hash.put("format", job.getFormat().name());
+        hash.put("status", job.getStatus().name());
+        hash.put("progress", Integer.toString(job.getProgress()));
+        putIfPresent(hash, "fileName", job.getFileName());
+        putIfPresent(hash, "errorMessage", job.getErrorMessage());
+        putIfPresent(hash, "storageKey", job.getStorageKey());
+        redis.opsForHash().putAll(key, hash);
+        redis.expire(key, Duration.ofMinutes(properties.getRetentionMinutes()));
     }
 
     public Optional<ConversionJob> find(String id) {
-        return Optional.ofNullable(jobs.get(id));
+        Map<Object, Object> hash = redis.opsForHash().entries(KEY_PREFIX + id);
+        if (hash.isEmpty()) {
+            return Optional.empty();
+        }
+        ConversionJob job = new ConversionJob(id, Format.valueOf((String) hash.get("format")));
+        job.setStatus(JobStatus.valueOf((String) hash.get("status")));
+        job.setProgress(Integer.parseInt((String) hash.get("progress")));
+        setIfPresent(hash, "fileName", job::setFileName);
+        setIfPresent(hash, "errorMessage", job::setErrorMessage);
+        setIfPresent(hash, "storageKey", job::setStorageKey);
+        return Optional.of(job);
     }
 
     public void remove(String id) {
-        ConversionJob job = jobs.remove(id);
-        if (job != null) {
-            deleteFileQuietly(job.getOutputFile());
+        redis.delete(KEY_PREFIX + id);
+    }
+
+    private void putIfPresent(Map<String, String> hash, String field, String value) {
+        if (value != null) {
+            hash.put(field, value);
         }
     }
 
-    /**
-     * Cada minuto elimina trabajos cuyo tiempo de retención expiró.
-     */
-    @Scheduled(fixedDelay = 60_000)
-    public void cleanup() {
-        Instant threshold = Instant.now().minus(Duration.ofMinutes(properties.getRetentionMinutes()));
-        jobs.values().removeIf(job -> {
-            boolean expired = job.getCreatedAt().isBefore(threshold);
-            boolean finished = job.getStatus() == JobStatus.READY || job.getStatus() == JobStatus.FAILED;
-            if (expired && finished) {
-                log.info("Eliminando trabajo expirado {}", job.getId());
-                deleteFileQuietly(job.getOutputFile());
-                return true;
-            }
-            return false;
-        });
-    }
-
-    private void deleteFileQuietly(Path file) {
-        if (file == null) {
-            return;
-        }
-        try {
-            Files.deleteIfExists(file);
-            Path parent = file.getParent();
-            if (parent != null && Files.isDirectory(parent)) {
-                try (var stream = Files.list(parent)) {
-                    if (stream.findAny().isEmpty()) {
-                        Files.deleteIfExists(parent);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            log.warn("No se pudo eliminar el archivo {}: {}", file, e.getMessage());
+    private void setIfPresent(Map<Object, Object> hash, String field, Consumer<String> setter) {
+        Object value = hash.get(field);
+        if (value != null) {
+            setter.accept((String) value);
         }
     }
 }

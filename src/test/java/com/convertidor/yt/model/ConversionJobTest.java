@@ -3,7 +3,6 @@ package com.convertidor.yt.model;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Path;
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,7 +25,7 @@ class ConversionJobTest {
         assertThat(job.getProgress()).isZero();
         assertThat(job.getCreatedAt()).isBeforeOrEqualTo(Instant.now());
         assertThat(job.getErrorMessage()).isNull();
-        assertThat(job.getOutputFile()).isNull();
+        assertThat(job.getStorageKey()).isNull();
         assertThat(job.getFileName()).isNull();
     }
 
@@ -52,12 +51,12 @@ class ConversionJobTest {
 
         job.setStatus(JobStatus.READY);
         job.setFileName("video.mp4");
-        job.setOutputFile(Path.of("/tmp/video.mp4"));
+        job.setStorageKey("id/video.mp4");
         job.setErrorMessage("algo salió mal");
 
         assertThat(job.getStatus()).isEqualTo(JobStatus.READY);
         assertThat(job.getFileName()).isEqualTo("video.mp4");
-        assertThat(job.getOutputFile()).isEqualTo(Path.of("/tmp/video.mp4"));
+        assertThat(job.getStorageKey()).isEqualTo("id/video.mp4");
         assertThat(job.getErrorMessage()).isEqualTo("algo salió mal");
     }
 }
